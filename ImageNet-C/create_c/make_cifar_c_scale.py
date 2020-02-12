@@ -422,11 +422,15 @@ def scale(image, severity=1):
     # return np.uint8( resizer.imresize(image, scale_factor=0.2*severity) )
     # return np.uint8( resizer.imresize(image, scale_factor=0.9375) )
     # return np.uint8( resizer.imresize(image, output_shape=(32, 32, 3)) )
-    if severity < 5: # 把 32(groun truth)避开
-        des_size = 16 + 4 * (severity - 1) # 16 is the smallest size
-    else:
-        des_size = 16 + 4 * (severity)
-    return np.uint8( resizer.imresize(image, scale_factor=des_size/32, output_shape=(des_size, des_size, 3)) )
+    # if severity < 5: # 把 32(groun truth)避开
+    #     des_size = 16 + 4 * (severity - 1) # 16 is the smallest size
+    # else:
+    #     des_size = 16 + 4 * (severity)
+    # return np.uint8( resizer.imresize(image, scale_factor=des_size/32, output_shape=(des_size, des_size, 3)) )
+    ori_size = 32
+    stride = 16
+    des_size = ori_size + stride * severity
+    return np.uint8( resizer.imresize(image, scale_factor=des_size/ori_size, output_shape=(des_size, des_size, 3)) )
 
 # /////////////// End Distortions ///////////////
 
@@ -460,8 +464,8 @@ d['Scale'] = scale
 # d['Saturate'] = saturate
 
 source_path = './cifarpy'
-des_path = './CIFAR-10-C/scale/'
-label_path = './CIFAR-10-C/scale/labels.npy'
+des_path = './CIFAR-10-C/scale_16/'
+label_path = './CIFAR-10-C/scale_16/labels.npy'
 # label_path = './CIFAR-10-C/labels.npy'
 
 test_data = dset.CIFAR10(source_path, train=False, download=True)
@@ -472,7 +476,7 @@ for method_name in d.keys():
     print('Creating images for the corruption', method_name)
     cifar_c, labels = [], []
 
-    for severity in range(1,9):
+    for severity in range(0, 6): # From 0, which means 32*32 (original pic)
         cifar_c = []
         corruption = lambda clean_img: d[method_name](clean_img, severity) # 函数都设计成了双输入
 
